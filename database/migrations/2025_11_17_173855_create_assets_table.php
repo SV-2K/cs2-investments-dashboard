@@ -8,15 +8,17 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('items', function (Blueprint $table) {
+        Schema::create('assets', function (Blueprint $table) {
+            $table->unsignedBigInteger('id')->unique()->primary();
+            $table->unsignedBigInteger('classid');
+            $table->unsignedBigInteger('user_id');
+            $table->timestamps();
             $table->softDeletes();
         });
     }
 
     public function down(): void
     {
-        Schema::table('items', function (Blueprint $table) {
-            $table->dropSoftDeletes();
-        });
+        Schema::dropIfExists('assets');
     }
 };

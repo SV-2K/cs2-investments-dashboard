@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Asset;
 use App\Models\Item;
-use App\Models\ItemType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
@@ -30,14 +30,14 @@ class InventoryController extends Controller
             }
         }
 
-        $storedTypeIds = ItemType::all()
+        $storedItemIds = Item::all()
             ->pluck('classid')
             ->toArray();
 
-        $itemTypes = [];
+        $items = [];
         foreach ($descriptions as $description) {
-            if (!in_array($description['classid'], $storedTypeIds)) {
-                $itemTypes[] = [
+            if (!in_array($description['classid'], $storedItemIds)) {
+                $items[] = [
                     'classid' => $description['classid'],
                     'name' => $description['name'],
                     'market_name' => $description['market_name'],
@@ -46,37 +46,37 @@ class InventoryController extends Controller
                 ];
             }
         }
-        ItemType::query()->insert($itemTypes);
+        Item::query()->insert($items);
 
-        $userStoredItemIds = Item::query()
+        $userStoredAssetsIds = Asset::query()
             ->where('user_id', auth()->user()->id)
-            ->pluck('classid')
+            ->pluck('id')
             ->toArray();
-        $userInventoryItemIds = array_column($response['assets'], 'classid');
+        $userInventoryAssetIds = array_column($response['assets'], 'assetid');
 
-        //items that are not in the user inventory anymore
-        $itemsToDelete = array_diff($userStoredItemIds, $userInventoryItemIds);
-        Item::destroy($itemsToDelete);
+        //assets that are not in the user inventory anymore
+        $assetsToDelete = array_diff($userStoredAssetsIds, $userInventoryAssetIds);
+        Asset::destroy($assetsToDelete);
 
-        $newItems = array_diff($userInventoryItemIds, $userStoredItemIds);
-        $items = [];
+        $newAssets = array_diff($userInventoryAssetIds, $userStoredAssetsIds);
+
+        $assets = [];
         foreach ($response['assets'] as $asset) {
-            if (!in_array($asset['classid'], $newItems) && !in_array($asset['classid'], $userStoredItemIds)) {
-                $items[] = [
+            if (in_array($asset['assetid'], $newAssets)) {
+                $assets[] = [
+                    'id' => $asset['assetid'],
                     'classid' => $asset['classid'],
-                    'assetid' => $asset['assetid'],
                     'user_id' => auth()->user()->id,
                 ];
             }
         }
-        Item::query()->insert($items);
+        Asset::query()->insert($assets);
 
-
-        $items = Item::query()
-            ->with('type')
+        $assets = Asset::query()
+            ->with('item')
             ->where('user_id', auth()->user()->id)
             ->get();
 
-        return view('test', compact('items'));
+        return view('test', compact('assets'));
     }
 }

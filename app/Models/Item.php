@@ -3,19 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Item extends Model
 {
-    protected $primaryKey = 'asset_id';
-    public $incrementing = false;
+    protected $primaryKey = 'classid';
     protected $fillable = [
-        'classid',
-        'user_id',
+        'name',
+        'market_name',
+        'name_color',
+        'icon_url',
     ];
-
-    public function type(): HasOne
-    {
-        return $this->hasOne(ItemType::class, 'classid', 'classid');
-    }
 }

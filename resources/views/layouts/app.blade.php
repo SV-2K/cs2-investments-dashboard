@@ -10,7 +10,7 @@
     <link href="{{ asset('css/sign-in.css') }}" rel="stylesheet">
     <title>@yield('title')</title>
 </head>
-<body>
+<body style="background-color: #2d3042">
     <div class="container">
         @yield('body')
     </div>

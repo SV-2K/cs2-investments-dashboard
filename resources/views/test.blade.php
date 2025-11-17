@@ -6,9 +6,9 @@
     {{ auth()->user()->name }}
     <br>
     <div class="row row-cols-8 gap-2">
-        @foreach($items as $item)
+        @foreach($assets as $asset)
             <div class="col">
-                <img width="100" height="100" src="https://community.fastly.steamstatic.com/economy/image/{{ $item->type->icon_url }}" style="border: 2px solid {{ '#' . $item->type->name_color }}">
+                <img width="100" height="100" src="https://community.fastly.steamstatic.com/economy/image/{{ $asset->item->icon_url }}" style="border: 2px solid {{ '#' . $asset->item->name_color }}">
             </div>
         @endforeach
     </div>

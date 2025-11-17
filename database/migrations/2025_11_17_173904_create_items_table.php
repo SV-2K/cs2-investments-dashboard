@@ -8,8 +8,8 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('item_types', function (Blueprint $table) {
-            $table->unsignedBigInteger('classid')->unique();
+        Schema::create('items', function (Blueprint $table) {
+            $table->unsignedBigInteger('classid')->unique()->primary();
             $table->string('name');
             $table->string('market_name');
             $table->string('name_color')->nullable();
@@ -17,8 +17,9 @@ return new class extends Migration
             $table->timestamps();
         });
     }
+
     public function down(): void
     {
-        Schema::dropIfExists('item_types');
+        Schema::dropIfExists('items');
     }
 };
