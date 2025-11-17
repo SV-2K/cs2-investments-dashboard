@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Item extends Model
 {
@@ -12,4 +13,9 @@ class Item extends Model
         'classid',
         'user_id',
     ];
+
+    public function type(): HasOne
+    {
+        return $this->hasOne(ItemType::class, 'classid', 'classid');
+    }
 }

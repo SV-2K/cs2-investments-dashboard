@@ -73,6 +73,7 @@ class InventoryController extends Controller
 
 
         $items = Item::query()
+            ->with('type')
             ->where('user_id', auth()->user()->id)
             ->get();
 
