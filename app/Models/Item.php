@@ -8,6 +8,7 @@ class Item extends Model
 {
     protected $primaryKey = 'classid';
     protected $fillable = [
+        'type_id',
         'name',
         'market_name',
         'name_color',

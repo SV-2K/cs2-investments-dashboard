@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Asset;
 use App\Models\Item;
+use App\Models\Type;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
@@ -31,18 +32,32 @@ class InventoryController extends Controller
         }
 
         $storedItemIds = Item::all()
-            ->pluck('classid')
-            ->toArray();
+            ->pluck('classid');
+        $storedTypes = Type::all();
 
         $items = [];
         foreach ($descriptions as $description) {
-            if (!in_array($description['classid'], $storedItemIds)) {
+            if (!$storedItemIds->has($description['classid'])) {
+                $itemType = collect($description['tags'])->firstWhere('category', 'Type');
+
+                $storedType = $storedTypes->firstWhere('internal_name', $itemType['internal_name']);
+
+                if ($storedType === null && !$storedTypes->has($itemType['internal_name'])) {
+                    $storedType = Type::query()
+                    ->create([
+                        'internal_name' => $itemType['internal_name'],
+                        'name' => $itemType['localized_tag_name']
+                    ]);
+                    $storedTypes->push($storedType);
+                }
+
                 $items[] = [
                     'classid' => $description['classid'],
                     'name' => $description['name'],
                     'market_name' => $description['market_name'],
                     'name_color' => $description['name_color'],
                     'icon_url' => $description['icon_url'],
+                    'type_id' => $storedType->id,
                 ];
             }
         }
