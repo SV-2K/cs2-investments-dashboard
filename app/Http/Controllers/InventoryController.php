@@ -29,16 +29,16 @@ class InventoryController extends Controller
 
         $items = [];
         foreach ($descriptions as $description) {
-            if (!$storedItemIds->has($description['classid'])) {
-                $itemType = collect($description['tags'])->firstWhere('category', 'Type');
+            if (!$storedItemIds->has($description->classid)) {
+                $itemType = $description->tags->firstWhere('category', 'Type');
 
-                $storedType = $storedTypes->firstWhere('internal_name', $itemType['internal_name']);
+                $storedType = $storedTypes->firstWhere('internal_name', $itemType->internal_name);
 
-                if ($storedType === null && !$storedTypes->has($itemType['internal_name'])) {
+                if ($storedType === null && !$storedTypes->has($itemType->internal_name)) {
                     $storedType = Type::query()
                     ->create([
-                        'internal_name' => $itemType['internal_name'],
-                        'name' => $itemType['localized_tag_name']
+                        'internal_name' => $itemType->internal_name,
+                        'name' => $itemType->localized_tag_name
                     ]);
                     $storedTypes->push($storedType);
                 }
