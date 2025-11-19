@@ -21,15 +21,7 @@ class InventoryController extends Controller
             'Referer' => "https://steamcommunity.com/profiles/{$steamId64}/inventory",
         ])->get($url)->json();
 
-        //removing duplicates
-        $descriptions = [];
-        $seen = [];
-        foreach ($response['descriptions'] as $description) {
-            if (!in_array($description['classid'], $seen)) {
-                $descriptions[] = $description;
-                $seen[] = $description['classid'];
-            }
-        }
+        $descriptions = collect($response['descriptions']);
 
         $storedItemIds = Item::all()
             ->pluck('classid');
