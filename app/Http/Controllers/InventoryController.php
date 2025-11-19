@@ -21,15 +21,7 @@ class InventoryController extends Controller
             'Referer' => "https://steamcommunity.com/profiles/{$steamId64}/inventory",
         ])->get($url)->json();
 
-        //removing duplicates
-        $descriptions = [];
-        $seen = [];
-        foreach ($response['descriptions'] as $description) {
-            if (!in_array($description['classid'], $seen)) {
-                $descriptions[] = $description;
-                $seen[] = $description['classid'];
-            }
-        }
+        $descriptions = collect($response['descriptions'])->unique('classid');
 
         $storedItemIds = Item::all()
             ->pluck('classid');
@@ -37,16 +29,16 @@ class InventoryController extends Controller
 
         $items = [];
         foreach ($descriptions as $description) {
-            if (!$storedItemIds->has($description['classid'])) {
-                $itemType = collect($description['tags'])->firstWhere('category', 'Type');
+            if (!$storedItemIds->has($description->classid)) {
+                $itemType = $description->tags->firstWhere('category', 'Type');
 
-                $storedType = $storedTypes->firstWhere('internal_name', $itemType['internal_name']);
+                $storedType = $storedTypes->firstWhere('internal_name', $itemType->internal_name);
 
-                if ($storedType === null && !$storedTypes->has($itemType['internal_name'])) {
+                if ($storedType === null && !$storedTypes->has($itemType->internal_name)) {
                     $storedType = Type::query()
                     ->create([
-                        'internal_name' => $itemType['internal_name'],
-                        'name' => $itemType['localized_tag_name']
+                        'internal_name' => $itemType->internal_name,
+                        'name' => $itemType->localized_tag_name
                     ]);
                     $storedTypes->push($storedType);
                 }
