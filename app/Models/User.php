@@ -16,6 +16,7 @@ class User extends Authenticatable
         'name',
         'email',
         'steamid64',
+        'last_inventory_update',
         'password',
     ];
 
