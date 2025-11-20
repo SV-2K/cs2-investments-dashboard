@@ -21,20 +21,19 @@ class InventoryController extends Controller
             'Referer' => "https://steamcommunity.com/profiles/{$steamId64}/inventory",
         ])->get($url)->json();
 
-        $descriptions = collect($response['descriptions']);
-
         $storedItemIds = Item::all()
             ->pluck('classid');
         $storedTypes = Type::all();
 
         $items = [];
+        $descriptions = collect($response['descriptions']);
         foreach ($descriptions as $description) {
-            if (!$storedItemIds->has($description['classid'])) {
-                $itemType = collect($description['tags'])->firstWhere('category', 'Type');
+            if (!$storedItemIds->contains($description['classid'])) {
 
+                $itemType = collect($description['tags'])->firstWhere('category', 'Type');
                 $storedType = $storedTypes->firstWhere('internal_name', $itemType['internal_name']);
 
-                if ($storedType === null && !$storedTypes->has($itemType['internal_name'])) {
+                if ($storedType === null) {
                     $storedType = Type::query()
                     ->create([
                         'internal_name' => $itemType['internal_name'],
@@ -51,6 +50,7 @@ class InventoryController extends Controller
                     'icon_url' => $description['icon_url'],
                     'type_id' => $storedType->id,
                 ];
+                $storedItemIds->push($description['classid']);
             }
         }
         Item::query()->insert($items);

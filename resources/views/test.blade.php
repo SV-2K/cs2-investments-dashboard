@@ -3,8 +3,12 @@
 @section('title')Inventory @endsection
 
 @section('body')
-    {{ auth()->user()->name }}
-    <br>
+    <p>
+        {{ auth()->user()->name }}
+    </p>
+    <p>
+        Items: {{ $assets->count() }}
+    </p>
     <div class="row row-cols-8 gap-2">
         @foreach($assets as $asset)
             <div class="col">
