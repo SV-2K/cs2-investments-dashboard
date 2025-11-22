@@ -19,6 +19,12 @@
                 </div>
             @endif
         </div>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="1" name="remember_me">
+            <label class="form-check-label">
+                Remember me
+            </label>
+        </div>
         <button class="btn btn-primary mt-2" type="submit">Log in</button>
     </form>
 @endsection

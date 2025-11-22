@@ -18,7 +18,10 @@ class AuthController extends Controller
 
     public function signIn(LoginRequest $request)
     {
-        if (auth()->attempt($request->validated())) {
+        $userInput = $request->safe()->only(['email', 'password']);
+        $isRemember = (bool)$request->remember_me;
+
+        if (auth()->attempt($userInput, $isRemember)) {
             return redirect()->route('testRoute123');
         } else {
             return redirect('login')->withErrors([]);

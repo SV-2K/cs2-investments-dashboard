@@ -9,10 +9,10 @@
     <p>
         Items: {{ $assets->count() }}
     </p>
-    <div class="row row-cols-8 gap-2">
+    <div class="row gap-2">
         @foreach($assets as $asset)
-            <div class="col">
-                <img width="100" height="100" src="https://community.fastly.steamstatic.com/economy/image/{{ $asset->item->icon_url }}" style="border: 2px solid {{ '#' . $asset->item->name_color }}">
+            <div class="item" @style("border: 2px solid #{$asset->item->name_color}")>
+                <img src="https://community.fastly.steamstatic.com/economy/image/{{ $asset->item->icon_url }}">
             </div>
         @endforeach
     </div>

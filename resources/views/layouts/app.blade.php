@@ -7,10 +7,10 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <script src="{{ asset('js/bootstrap.min.js') }}"></script>
     <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
-    <link href="{{ asset('css/sign-in.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/style.css') }}" rel="stylesheet">
     <title>@yield('title')</title>
 </head>
-<body class="text-white" style="background-color: #2d3042">
+<body class="text-white p-0" style="background-color: #2d3042">
     <div class="container">
         @yield('body')
     </div>
