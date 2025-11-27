@@ -6,6 +6,7 @@ use App\Models\Asset;
 use App\Services\InventoryService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Http;
 
 class InventoryController extends Controller
 {
@@ -13,11 +14,13 @@ class InventoryController extends Controller
     {
         $service->updateUserInventory(auth()->user());
 
+        $service->updateItemsPriceHistory([7545313888]);
+
         $assets = Asset::query()
             ->with('item')
             ->where('user_id', auth()->user()->id)
             ->get();
 
-        return view('test', compact('assets'));
+        return view('index', compact('assets'));
     }
 }

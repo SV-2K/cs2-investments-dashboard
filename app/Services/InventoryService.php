@@ -94,4 +94,26 @@ class InventoryService
             'last_inventory_update' => Carbon::now()
         ]);
     }
+
+    public function updateItemsPriceHistory(array $ids): void
+    {
+        $items = Item::findMany($ids);
+
+        foreach ($items as $item) {
+            $marketLink = 'https://steamcommunity.com/market/listings/730/' . rawurlencode($item->market_name);
+
+            $response = Http::withHeaders([
+                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36',
+                'Accept' => 'application/json, text/javascript, */*; q=0.01',
+                'Referer' => "https://steamcommunity.com/market/search?appid=730",
+            ])->get($marketLink)->body();
+
+            $pattern = '/var\s+line1\s*=\s*(\[[\s\S]*?\]);/';
+
+            preg_match($pattern, $response, $matches);
+            $priceHistory = json_decode($matches[1], true);
+
+            dd($priceHistory);
+        }
+    }
 }
