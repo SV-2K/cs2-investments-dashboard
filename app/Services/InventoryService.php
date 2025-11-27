@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Asset;
 use App\Models\Item;
+use App\Models\Price;
 use App\Models\Type;
 use App\Models\User;
 use Carbon\Carbon;
@@ -95,9 +96,20 @@ class InventoryService
         ]);
     }
 
-    public function updateItemsPriceHistory(array $ids): void
+    public function updateItemsPriceHistory(array $classIds): void
     {
-        $items = Item::findMany($ids);
+        $items = Item::findMany($classIds);
+
+        $storedPrices = Price::query()
+            ->whereIn('classid', $classIds)
+            ->get();
+
+        $existingDates = [];
+        foreach ($storedPrices as $storedPrice) {
+            $existingDates[$storedPrice->classid . '|' . $storedPrice->date] = true;
+        }
+
+        $pricesToStore = [];
 
         foreach ($items as $item) {
             $marketLink = 'https://steamcommunity.com/market/listings/730/' . rawurlencode($item->market_name);
@@ -113,7 +125,21 @@ class InventoryService
             preg_match($pattern, $response, $matches);
             $priceHistory = json_decode($matches[1], true);
 
-            dd($priceHistory);
+            foreach ($priceHistory as $priceHistoryItem) {
+                // dates originally looks like this "Nov 03 2025 00: +0"
+                $date = Carbon::parse(substr($priceHistoryItem[0], 0, 11))->format('Y-m-d');
+
+                if (!isset($existingDates[$item->classid . '|' . $date])) {
+                    $pricesToStore[] = [
+                        'classid' => $item->classid,
+                        'date' => $date,
+                        'price' => $priceHistoryItem[1],
+                        'sales_amount' => $priceHistoryItem[2],
+                    ];
+                }
+            }
         }
+
+        Price::query()->insert($pricesToStore);
     }
 }
