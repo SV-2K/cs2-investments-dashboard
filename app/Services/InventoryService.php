@@ -58,6 +58,7 @@ class InventoryService
                     'classid' => $description['classid'],
                     'name' => $description['name'],
                     'market_name' => $description['market_name'],
+                    'marketable' => $description['marketable'],
                     'name_color' => $description['name_color'],
                     'icon_url' => $description['icon_url'],
                     'type_id' => $storedType->id,
