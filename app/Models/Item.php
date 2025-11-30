@@ -11,6 +11,8 @@ class Item extends Model
         'type_id',
         'name',
         'market_name',
+        'marketable',
+        'price_last_checked',
         'name_color',
         'icon_url',
     ];
