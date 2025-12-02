@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Asset;
+use App\Models\Item;
 use App\Services\InventoryService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -14,7 +15,7 @@ class InventoryController extends Controller
     {
         $service->updateUserInventory(auth()->user());
 
-        $service->updateItemsPriceHistory([7545313888]);
+        $service->updateItemsPriceHistory(Item::all()->pluck('classid')->toArray());
 
         $assets = Asset::query()
             ->with('item')

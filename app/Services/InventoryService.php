@@ -2,12 +2,14 @@
 
 namespace App\Services;
 
+use App\Helpers\DateHelpers;
 use App\Models\Asset;
 use App\Models\Item;
 use App\Models\Price;
 use App\Models\Type;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Http\Client\Pool;
 use Illuminate\Support\Facades\Http;
 
 class InventoryService
@@ -99,7 +101,12 @@ class InventoryService
 
     public function updateItemsPriceHistory(array $classIds): void
     {
-        $items = Item::findMany($classIds);
+        ini_set('memory_limit', '512M');
+
+        $items = Item::query()
+            ->where('marketable', true)
+            ->whereDate('price_last_checked', '<', Carbon::today())
+            ->findMany($classIds);
 
         $storedPrices = Price::query()
             ->whereIn('classid', $classIds)
@@ -110,37 +117,43 @@ class InventoryService
             $existingDates[$storedPrice->classid . '|' . $storedPrice->date] = true;
         }
 
+        $responses = Http::pool(function (Pool $pool) use ($items) {
+            foreach ($items as $item) {
+                $marketLink = 'https://steamcommunity.com/market/pricehistory/?appid=730&l=english&currency=3&market_hash_name=' . rawurlencode($item->market_name);
+
+                $pool->as($item->classid)->withHeaders([
+                        'Cookie' => env('STEAM_COOKIES'),
+                        'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36',
+                        'Accept' => 'application/json, text/javascript, */*; q=0.01',
+                        'Referer' => "https://steamcommunity.com/market/search?appid=730",
+                    ])->get($marketLink);
+            }
+        });
+
         $pricesToStore = [];
-
         foreach ($items as $item) {
-            $marketLink = 'https://steamcommunity.com/market/listings/730/' . rawurlencode($item->market_name);
+            if ($responses[$item->classid]->json() === null) continue;
 
-            $response = Http::withHeaders([
-                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36',
-                'Accept' => 'application/json, text/javascript, */*; q=0.01',
-                'Referer' => "https://steamcommunity.com/market/search?appid=730",
-            ])->get($marketLink)->body();
+            $itemPrices = $responses[$item->classid]->json()['prices'];
 
-            $pattern = '/var\s+line1\s*=\s*(\[[\s\S]*?\]);/';
-
-            preg_match($pattern, $response, $matches);
-            $priceHistory = json_decode($matches[1], true);
-
-            foreach ($priceHistory as $priceHistoryItem) {
-                // dates originally looks like this "Nov 03 2025 00: +0"
-                $date = Carbon::parse(substr($priceHistoryItem[0], 0, 11))->format('Y-m-d');
+            foreach ($itemPrices as $price) {
+                $date = DateHelpers::convertSteamDate($price[0]);
 
                 if (!isset($existingDates[$item->classid . '|' . $date])) {
                     $pricesToStore[] = [
                         'classid' => $item->classid,
                         'date' => $date,
-                        'price' => $priceHistoryItem[1],
-                        'sales_amount' => $priceHistoryItem[2],
+                        'price' => $price[1],
+                        'sales_amount' => $price[2],
                     ];
                 }
             }
+            $item->update([
+                'price_last_checked' => Carbon::today(),
+            ]);
         }
-
-        Price::query()->insert($pricesToStore);
+        foreach (array_chunk($pricesToStore, 10000) as $chunk) {
+            Price::query()->insert($chunk);
+        }
     }
 }
