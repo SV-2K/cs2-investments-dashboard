@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\ItemsController;
 use Illuminate\Support\Facades\Route;
 
 Route::controller(AuthController::class)->middleware('guest')->group(function () {
@@ -12,5 +12,8 @@ Route::controller(AuthController::class)->middleware('guest')->group(function ()
 });
 
 Route::middleware('auth')->group(function () {
-    Route::get('/', [InventoryController::class, 'index'])->name('testRoute123');
+    Route::get('/', function() {
+        return redirect()->route('items.index');
+    });
+    Route::get('/items', [ItemsController::class, 'index'])->name('items.index');
 });

@@ -108,6 +108,8 @@ class InventoryService
             ->whereDate('price_last_checked', '<', Carbon::today())
             ->findMany($classIds);
 
+        if ($items->isEmpty()) return;
+
         $storedPrices = Price::query()
             ->whereIn('classid', $classIds)
             ->get();

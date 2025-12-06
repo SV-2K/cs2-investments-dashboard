@@ -9,17 +9,17 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Http;
 
-class InventoryController extends Controller
+class ItemsController extends Controller
 {
     public function index(InventoryService $service): View
     {
         $service->updateUserInventory(auth()->user());
-
         $service->updateItemsPriceHistory(Item::all()->pluck('classid')->toArray());
 
         $assets = Asset::query()
             ->with('item')
             ->where('user_id', auth()->user()->id)
+            ->orderByDesc('id')
             ->get();
 
         return view('index', compact('assets'));
